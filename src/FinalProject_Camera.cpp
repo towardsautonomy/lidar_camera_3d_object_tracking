@@ -130,7 +130,7 @@ int main(int argc, const char *argv[])
         clusterLidarWithROI(dataBuffer.get_ptr(dataBuffer.getSize() - 1)->boundingBoxes, dataBuffer.get_ptr(dataBuffer.getSize() - 1)->lidarPoints, shrinkFactor, P_rect_00, R_rect_00, RT);
 
         // Visualize 3D objects
-        bVis = true;
+        bVis = false;
         if(bVis)
         {
             show3DObjects(dataBuffer.get_ptr(dataBuffer.getSize() - 1)->boundingBoxes, cv::Size(4.0, 20.0), cv::Size(500, 500), true);
@@ -138,10 +138,6 @@ int main(int argc, const char *argv[])
         bVis = false;
 
         cout << "#4 : CLUSTER LIDAR POINT CLOUD done" << endl;
-        
-        
-        // REMOVE THIS LINE BEFORE PROCEEDING WITH THE FINAL PROJECT
-        continue; // skips directly to the next image without processing what comes beneath
 
         /* DETECT IMAGE KEYPOINTS */
 
@@ -192,7 +188,7 @@ int main(int argc, const char *argv[])
         /* EXTRACT KEYPOINT DESCRIPTORS */
 
         cv::Mat descriptors;
-        string descriptorType = "BRISK"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
+        string descriptorType = "BRIEF"; // BRISK, BRIEF, ORB, FREAK, AKAZE, SIFT
         descKeypoints(dataBuffer.get_ptr(dataBuffer.getSize() - 1)->keypoints, dataBuffer.get_ptr(dataBuffer.getSize() - 1)->cameraImg, descriptors, descriptorType);
 
         // push descriptors for current frame to end of data buffer
@@ -207,12 +203,12 @@ int main(int argc, const char *argv[])
             /* MATCH KEYPOINT DESCRIPTORS */
 
             vector<cv::DMatch> matches;
-            string matcherType = "MAT_BF";        // MAT_BF, MAT_FLANN
+            string matcherType = "MAT_FLANN";        // MAT_BF, MAT_FLANN
             string descriptorType = "DES_BINARY"; // DES_BINARY, DES_HOG
-            string selectorType = "SEL_NN";       // SEL_NN, SEL_KNN
+            string selectorType = "SEL_KNN";       // SEL_NN, SEL_KNN
 
-            matchDescriptors(dataBuffer.get_ptr(dataBuffer.getSize() - 2)->keypoints, dataBuffer.get_ptr(dataBuffer.getSize() - 1)->keypoints,
-                             dataBuffer.get_ptr(dataBuffer.getSize() - 2)->descriptors, dataBuffer.get_ptr(dataBuffer.getSize() - 1)->descriptors,
+            matchDescriptors(dataBuffer.get_ptr(dataBuffer.getSize() - 1)->keypoints, dataBuffer.get_ptr(dataBuffer.getSize() - 2)->keypoints,
+                             dataBuffer.get_ptr(dataBuffer.getSize() - 1)->descriptors, dataBuffer.get_ptr(dataBuffer.getSize() - 2)->descriptors,
                              matches, descriptorType, matcherType, selectorType);
 
             // store matches in current data frame
@@ -233,7 +229,6 @@ int main(int argc, const char *argv[])
             dataBuffer.get_ptr(dataBuffer.getSize() - 1)->bbMatches = bbBestMatches;
 
             cout << "#8 : TRACK 3D OBJECT BOUNDING BOXES done" << endl;
-
 
             /* COMPUTE TTC ON OBJECT IN FRONT */
 
